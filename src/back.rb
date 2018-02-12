@@ -1,5 +1,7 @@
 require 'open-uri'
 require 'nokogiri'
+require 'openssl'
+require 'progress_bar'
 
 NERDCAST_URL = "https://jovemnerd.com.br/nerdcast/"
 
@@ -47,16 +49,28 @@ def downloadPodcasts downloadLinks
     loadDownloads
 
     downloadLinks.each_with_index do |uri, index|
+        last = 0
+        bar = nil
         filename = uri.gsub("https://nerdcast.jovemnerd.com.br/", "")
         begin
-            f = open(uri, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE})
-            IO.copy_stream(f, "./downloads/#{filename}")
+            f = open(filename, 'wb') do |fo|
+                fo.print open(uri,
+
+                :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE,
+
+                :content_length_proc => lambda { |total|
+                    bar = ProgressBar.new(total)
+                },
+                
+                :progress_proc => lambda {|current|
+                    bar.increment! (current - last)
+                    last = current
+                }).read
+            end
         ensure
-            nMoreToGo(index, downloadLinks.length) if(downloadLinks.length - (index + 1) > 0) 
-            f.close()
+            nMoreToGo(index, downloadLinks.length) if(downloadLinks.length - (index + 1) > 0)
         end
     end
 
     bye
-
 end

@@ -5,6 +5,7 @@
 require 'open-uri'
 require 'nokogiri'
 require 'openssl'
+require 'progress_bar'
 
 NERDCAST_URL = "https://jovemnerd.com.br/nerdcast/"
 
@@ -52,18 +53,30 @@ def downloadPodcasts downloadLinks
     loadDownloads
 
     downloadLinks.each_with_index do |uri, index|
+        last = 0
+        bar = nil
         filename = uri.gsub("https://nerdcast.jovemnerd.com.br/", "")
         begin
-            f = open(uri, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE})
-            IO.copy_stream(f, filename)
+            f = open(filename, 'wb') do |fo|
+                fo.print open(uri,
+
+                :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE,
+
+                :content_length_proc => lambda { |total|
+                    bar = ProgressBar.new(total)
+                },
+                
+                :progress_proc => lambda {|current|
+                    bar.increment! (current - last)
+                    last = current
+                }).read
+            end
         ensure
-            nMoreToGo(index, downloadLinks.length) if(downloadLinks.length - (index + 1) > 0) 
-            f.close()
+            nMoreToGo(index, downloadLinks.length) if(downloadLinks.length - (index + 1) > 0)
         end
     end
 
     bye
-
 end
 
 # CONTENT FROM ui.rb
@@ -119,15 +132,15 @@ def loadURIs
 end
 
 def loadDownloads
-    puts "Hey, now we're dowloading your podcast(s) and that can take some time, so just sit down and relax, we'll tell you when we're done!\n"
+    puts "Hey, now we're dowloading your podcast(s) and that can take some time, you can follow the progress right below :)\n\n"
 end
 
 def nMoreToGo index, totalLength
-    puts "\nOnly #{totalLength - (index + 1)} more to go!"
+    puts "\n\nOnly #{totalLength - (index + 1)} more to go!\n\n"
 end
 
 def bye
-    puts "Aaaand it's over! Check the downloads folder, hope to see you again soon, press any key to leave!\n\n"
+    puts "\n\nAaaand it's over! Check the root folder, hope to see you again soon, press any key to leave.\n\n"
     gets
     exit
 end
@@ -165,7 +178,7 @@ def isInputValid?(input, numberOfPodcasts)
     end
 
     true
-end  
+end
 
 # CONTENT FROM init.rb
 

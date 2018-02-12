@@ -52,15 +52,15 @@ def loadURIs
 end
 
 def loadDownloads
-    puts "Hey, now we're dowloading your podcast(s) and that can take some time, so just sit down and relax, we'll tell you when we're done!\n"
+    puts "Hey, now we're dowloading your podcast(s) and that can take some time, you can follow the progress right below :)\n\n"
 end
 
 def nMoreToGo index, totalLength
-    puts "\nOnly #{totalLength - (index + 1)} more to go!"
+    puts "\n\nOnly #{totalLength - (index + 1)} more to go!\n\n"
 end
 
 def bye
-    puts "Aaaand it's over! Check the downloads folder, hope to see you again soon, press any key to leave.\n\n"
+    puts "\n\nAaaand it's over! Check the root folder, hope to see you again soon, press any key to leave.\n\n"
     gets
     exit
 end

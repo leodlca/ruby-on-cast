@@ -51,3 +51,6 @@ build-iPhoneSimulator/
 
 script2exe.exe
 script2exe
+ruby-on-cast.exe
+ruby-on-cast
+win_executable/script2exe.exe
